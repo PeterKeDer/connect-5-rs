@@ -1,0 +1,17 @@
+[package]
+name = "server"
+version = "0.1.0"
+authors = ["Peter Ke <peterke0911@gmail.com>"]
+edition = "2018"
+workspace = ".."
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+connect-5-rs = { path = ".." }
+env_logger = "0.7.1"
+actix-web = "2.0"
+actix-rt = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+uuid = { version = "0.8", features = ["v4", "serde"] }

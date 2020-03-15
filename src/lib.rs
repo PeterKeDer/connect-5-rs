@@ -73,6 +73,7 @@ impl fmt::Display for GameStepError {
 impl error::Error for GameStepError {}
 
 /// The state of a game.
+#[derive(Debug)]
 pub enum GameState {
     /// The state representing that the game is still ongoing.
     Normal,
@@ -90,6 +91,7 @@ pub enum GameState {
 }
 
 /// The board state of a game.
+#[derive(Debug)]
 struct GameBoard {
     /// The size of the board, representing both the width and height.
     size: usize,
@@ -173,6 +175,7 @@ impl GameBoard {
 }
 
 /// A Connect 5 game.
+#[derive(Debug)]
 pub struct Game {
     /// The board of the game.
     board: GameBoard,

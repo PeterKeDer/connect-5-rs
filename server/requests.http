@@ -1,0 +1,14 @@
+@base_url = http://localhost:8080
+
+### Get rooms
+
+GET {{base_url}}/rooms
+
+### Create room
+
+POST {{base_url}}/rooms/create
+Content-Type: application/json
+
+{
+    "id": "test",
+}
