@@ -1,25 +1,48 @@
 use std::fmt;
 
 use actix_web::{HttpResponse, ResponseError, http::StatusCode};
-use serde::Serialize;
-use serde_json::{json, to_string_pretty};
+use serde_json::{Value, json};
 
-#[derive(Serialize, Debug)]
-pub struct JsonError {
-    pub msg: &'static str,
-    pub status: u16,
+#[derive(Debug)]
+pub struct Error {
+    value: Value,
+    status: StatusCode,
 }
 
-impl fmt::Display for JsonError {
+impl Error {
+    fn new(status: StatusCode, msg: &str) -> Error {
+        Error {
+            value: json!({
+                "error": msg,
+            }),
+            status,
+        }
+    }
+
+    pub fn bad_request(msg: &str) -> Error {
+        println!("{}", msg);
+        Error::new(StatusCode::BAD_REQUEST, msg)
+    }
+
+    pub fn internal() -> Error {
+        Error::new(StatusCode::INTERNAL_SERVER_ERROR, "internal server error")
+    }
+}
+
+impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", to_string_pretty(self).unwrap())
+        let status_str = self.status.canonical_reason()
+            .unwrap_or_else(|| self.status.as_str());
+
+        write!(f, "{}: {}", status_str, self.value)
     }
 }
 
-impl ResponseError for JsonError {
+impl ResponseError for Error {
     fn error_response(&self) -> HttpResponse {
-        let err_json = json!({ "error": self.msg, });
-        HttpResponse::build(StatusCode::from_u16(self.status).unwrap())
-            .json(err_json)
+        HttpResponse::build(self.status)
+            .json(&self.value)
     }
 }
+
+// TODO: implement From trait for Error

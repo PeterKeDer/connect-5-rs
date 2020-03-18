@@ -10,5 +10,12 @@ POST {{base_url}}/rooms/create
 Content-Type: application/json
 
 {
-    "id": "test",
+    "room_id": "xdxd",
+    "role": 0,
+    "nickname": "xdxd",
+    "settings": {
+        "board_size": 16,
+        "allow_spectators": false,
+        "public": true
+    }
 }
