@@ -5,8 +5,8 @@ use connect_5_rs::{Game, GameSide};
 use crate::models::{
     User,
     UserId,
-    Result,
-    Error,
+    StateError,
+    ValidationError,
     game_serde::{serialize_game, deserialize_game},
 };
 
@@ -90,9 +90,10 @@ impl Room {
     }
 
     /// Add user to room using a key, provided the spot isn't taken.
-    pub fn add_user(&mut self, key: RoomUserKey, user: User) -> Result<()> {
+    pub fn add_user(&mut self, key: RoomUserKey, user: User) -> Result<(), StateError> {
+        // TODO: use a different type of error here
         if self.get_user(&key).is_some() {
-            Err(Error::bad_request("room_spot_taken"))
+            Err(StateError::new("room_spot_taken"))
         } else {
             match key {
                 RoomUserKey::Player(GameSide::Black) => {
@@ -112,25 +113,25 @@ impl Room {
 
 // Validation
 impl Room {
-    fn validate_id(id: &String) -> Result<()> {
+    fn validate_id(id: &String) -> Result<(), ValidationError> {
         if (1..=MAX_ROOM_ID_LENGTH).contains(&id.len()) {
             Ok(())
         } else {
-            Err(Error::bad_request("invalid_room_id"))
+            Err(ValidationError::new("room_id", None))
         }
     }
 
-    fn validate_settings(settings: &RoomSettings) -> Result<()> {
+    fn validate_settings(settings: &RoomSettings) -> Result<(), ValidationError> {
         if (MIN_BOARD_SIZE..=MAX_BOARD_SIZE).contains(&settings.board_size) {
             Ok(())
         } else {
-            Err(Error::bad_request("invalid_board_size"))
+            Err(ValidationError::new("board_size", None))
         }
     }
 
     /// Create a room with given id and settings. If these are invalid, return the error,
     /// otherwise return the created room.
-    pub fn validate(id: String, settings: RoomSettings) -> Result<Room> {
+    pub fn validate(id: String, settings: RoomSettings) -> Result<Room, ValidationError> {
         Room::validate_id(&id)?;
         Room::validate_settings(&settings)?;
 

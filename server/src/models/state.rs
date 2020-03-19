@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use connect_5_rs::{Game, Point, GameSide};
-use crate::models::{Room, RoomSettings, User, UserId, Result, Error, RoomUserKey};
+use crate::models::{StateError, Room, RoomSettings, User, UserId, RoomUserKey};
 
 pub struct AppState {
     pub rooms: HashMap<String, Room>,
@@ -17,10 +17,10 @@ impl AppState {
     }
 
     /// Add a room to a room. If the room with same id already exist, return error.
-    pub fn add_room(&mut self, room: Room) -> Result<()> {
+    pub fn add_room(&mut self, room: Room) -> Result<(), StateError> {
         if self.rooms.contains_key(&room.id) {
             // TODO: move all string literals to constants file
-            Err(Error::bad_request("duplicate_room_id"))
+            Err(StateError::new("duplicate_room_id"))
         } else {
             self.rooms.insert(room.id.clone(), room);
             Ok(())

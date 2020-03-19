@@ -7,7 +7,6 @@ use crate::models::{
     Room,
     User,
     UserId,
-    Error,
     RoomSettings,
     RoomRole,
     RoomUserKey,
@@ -31,7 +30,7 @@ pub async fn post_create_room(
     params: Json<PostCreateRoomParams>,
     data: AppData,
 ) -> ApiResult {
-    let mut state = data.lock().map_err(|_| Error::internal())?;
+    let mut state = data.lock()?;
     let params = params.into_inner();
 
     println!("{}", serde_json::to_string_pretty(&params).unwrap());
@@ -48,7 +47,7 @@ pub async fn post_create_room(
         RoomRole::Player(side) => RoomUserKey::Player(side),
         RoomRole::Spectator => RoomUserKey::Spectator(user_id),
     };
-    room.add_user(key, user).unwrap();
+    room.add_user(key, user)?;
 
     // Try adding room, potential duplicate id
     state.add_room(room)?;
@@ -60,9 +59,7 @@ pub async fn post_create_room(
 }
 
 pub async fn get_rooms(data: AppData) -> ApiResult {
-    let rooms = &data.lock()
-        .map_err(|_| Error::internal())?
-        .rooms;
+    let rooms = &data.lock()?.rooms;
 
     let rooms_json = json!({
         "rooms": rooms,
