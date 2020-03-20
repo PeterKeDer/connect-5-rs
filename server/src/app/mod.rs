@@ -1,7 +1,7 @@
 mod routes;
 
 use std::sync::Mutex;
-use actix_web::{web, HttpServer, HttpResponse, App, middleware::Logger};
+use actix_web::{web, HttpServer, HttpResponse, HttpRequest, App, middleware::Logger, error};
 use routes::routes;
 use crate::models::AppState;
 
@@ -17,6 +17,9 @@ pub async fn start() -> std::io::Result<()> {
             App::new()
                 .app_data(data.clone())
                 .wrap(Logger::default())
+                .app_data(web::JsonConfig::default()
+                    .error_handler(handle_json_error)
+                )
                 .configure(routes)
                 .default_service(web::resource("")
                     .route(web::get().to(HttpResponse::NotFound))
@@ -26,4 +29,17 @@ pub async fn start() -> std::io::Result<()> {
         .bind("127.0.0.1:8080")?
         .run()
         .await
+}
+
+fn handle_json_error(err: error::JsonPayloadError, _req: &HttpRequest) -> error::Error {
+    let err_string = err.to_string();
+    error::InternalError
+        ::from_response(
+            err,
+            HttpResponse::BadRequest().json(serde_json::json!({
+                "type": "json_error",
+                "error": err_string,
+            })),
+        )
+        .into()
 }
